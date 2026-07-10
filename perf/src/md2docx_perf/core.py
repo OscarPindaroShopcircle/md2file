@@ -6,13 +6,15 @@ returns plain dataclasses for the CLI to render.
 
 from __future__ import annotations
 
+import os
 import random
 import shutil
 import subprocess
 import time
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Callable, Optional
 
 from .exceptions import BenchError
 
@@ -126,6 +128,9 @@ class BenchOutput:
     classes: list[ClassResult]
     impl_names: list[str]
     gen_seconds: float
+    gen_written: int
+    gen_cached: int
+    gen_workers: int
     output_dir: Path
     words_per_page: int
 
@@ -190,21 +195,57 @@ def _run_one(argv: list[str]) -> bool:
     return subprocess.run(argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0
 
 
-def _generate(cfg: "BenchConfig") -> dict[str, list[Path]]:
+def _gen_one(task: tuple[str, int, int, bool]) -> bool:
+    """Worker: write one input file deterministically. Returns True if written,
+    False if the file already existed (cache hit). Content depends only on the
+    seed + target, so generation is fully deterministic and idempotent."""
+    path_str, seed, target, force = task
+    path = Path(path_str)
+    if path.exists() and not force:
+        return False
+    text = _Gen(random.Random(seed)).build(target)
+    path.write_text(text, encoding="utf-8")
+    return True
+
+
+def _generate(
+    cfg: "BenchConfig", tick: Optional[Callable[[], None]] = None
+) -> tuple[dict[str, list[Path]], int, int, int]:
+    """Generate inputs in parallel, skipping any that already exist (cache).
+
+    Returns (class -> files, written_count, cached_count, worker_count).
+    ``tick`` (if given) is called once per file processed, for progress display.
+    """
     inputs_root = Path(cfg.inputs_dir)
     out: dict[str, list[Path]] = {}
+    tasks: list[tuple[str, int, int, bool]] = []
     for sc in cfg.sizes:
         cls_dir = inputs_root / sc.name
         cls_dir.mkdir(parents=True, exist_ok=True)
         target = int(sc.pages * cfg.words_per_page)
-        files = []
-        for i in range(sc.count):
-            gen = _Gen(random.Random(sc.seed * 100_000 + i))
-            path = cls_dir / f"{sc.name}-{i:03d}.md"
-            path.write_text(gen.build(target), encoding="utf-8")
-            files.append(path)
+        files = [cls_dir / f"{sc.name}-{i:03d}.md" for i in range(sc.count)]
         out[sc.name] = files
-    return out
+        tasks += [(str(p), sc.seed * 100_000 + i, target, cfg.force) for i, p in enumerate(files)]
+
+    if not tasks:
+        return out, 0, 0, 0
+
+    workers = cfg.jobs or os.cpu_count() or 1
+    workers = max(1, min(workers, len(tasks)))
+    results: list[bool] = []
+    if workers == 1:
+        for t in tasks:
+            results.append(_gen_one(t))
+            if tick:
+                tick()
+    else:
+        with ProcessPoolExecutor(max_workers=workers) as ex:
+            for r in ex.map(_gen_one, tasks, chunksize=max(1, len(tasks) // (workers * 4) or 1)):
+                results.append(r)
+                if tick:
+                    tick()
+    written = sum(results)
+    return out, written, len(tasks) - written, workers
 
 
 def _discover_inputs(cfg: "BenchConfig") -> dict[str, list[Path]]:
@@ -221,7 +262,13 @@ def _discover_inputs(cfg: "BenchConfig") -> dict[str, list[Path]]:
 
 # --- entry point ----------------------------------------------------------
 
-def run(cfg: "BenchConfig", *, dry_run: bool = False) -> BenchOutput:
+def run(
+    cfg: "BenchConfig",
+    *,
+    dry_run: bool = False,
+    on_generate: Optional[Callable[[], None]] = None,
+    on_convert: Optional[Callable[[], None]] = None,
+) -> BenchOutput:
     repo_root = resolve_repo_root(cfg.repo_root)
     impls = discover_impls(cfg, repo_root)
     if not impls:
@@ -229,12 +276,14 @@ def run(cfg: "BenchConfig", *, dry_run: bool = False) -> BenchOutput:
 
     if dry_run:
         return BenchOutput(classes=[], impl_names=[n for n, _ in impls], gen_seconds=0.0,
+                           gen_written=0, gen_cached=0, gen_workers=0,
                            output_dir=Path(cfg.output_dir), words_per_page=cfg.words_per_page)
 
     gen_seconds = 0.0
+    written = cached = workers = 0
     if cfg.regenerate:
         t0 = time.perf_counter()
-        inputs = _generate(cfg)
+        inputs, written, cached, workers = _generate(cfg, tick=on_generate)
         gen_seconds = time.perf_counter() - t0
     else:
         inputs = _discover_inputs(cfg)
@@ -259,7 +308,10 @@ def run(cfg: "BenchConfig", *, dry_run: bool = False) -> BenchOutput:
             err = None
             t0 = time.perf_counter()
             for f in files:
-                if not _run_one(_fill(tmpl, f, out_dir / f"{name}.docx")):
+                success = _run_one(_fill(tmpl, f, out_dir / f"{name}.docx"))
+                if on_convert:
+                    on_convert()
+                if not success:
                     ok, err = False, f"conversion failed on {f.name}"
                     break
             elapsed = time.perf_counter() - t0
@@ -268,4 +320,5 @@ def run(cfg: "BenchConfig", *, dry_run: bool = False) -> BenchOutput:
                                    total_bytes=total_bytes, total_words=total_words, results=results))
 
     return BenchOutput(classes=classes, impl_names=[n for n, _ in impls],
-                       gen_seconds=gen_seconds, output_dir=out_dir, words_per_page=cfg.words_per_page)
+                       gen_seconds=gen_seconds, gen_written=written, gen_cached=cached, gen_workers=workers,
+                       output_dir=out_dir, words_per_page=cfg.words_per_page)

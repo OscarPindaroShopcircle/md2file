@@ -6,8 +6,8 @@
 input_path: report.md
 
 theme:
-  font: Arial            # brand font is Geist; Arial renders reliably everywhere
-  mono_font: Consolas
+  font: Geist            # official Circeus brand font (falls back to a neutral sans if not installed)
+  mono_font: Geist Mono
   colors:
     text: "0A0A0A"
     primary: "0A0A0A"

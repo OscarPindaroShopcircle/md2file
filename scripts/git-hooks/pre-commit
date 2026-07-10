@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook: keep the self-contained skill bundles in sync with the repo.
+# If any engine / JS / branded-theme source is staged, rebuild the skill bundles
+# and stage the result so they never drift. Installed via scripts/install-hooks.sh
+# (git config core.hooksPath scripts/git-hooks).
+#
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+source "$ROOT/scripts/colors.sh" 2>/dev/null || true
+
+# Only rebuild when a source the bundles are derived from is staged.
+if ! git diff --cached --name-only | grep -qE \
+  '^(python/src/|js/src/|js/themes/|js/package\.json|examples/02-branded/|scripts/build_skills\.py)'; then
+  exit 0
+fi
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "warning: uv not found — skipping skill rebuild; run scripts/build_skills.py manually." >&2
+  exit 0
+fi
+
+out="$(uv --project "$ROOT/python" run python "$ROOT/scripts/build_skills.py" 2>&1)" || {
+  echo "$out" >&2
+  echo "error: skill build failed; commit aborted." >&2
+  exit 1
+}
+
+if git add "$ROOT/skills" && ! git diff --cached --quiet -- "$ROOT/skills"; then
+  type c_info >/dev/null 2>&1 && c_info ">> skills rebuilt and staged (sources changed)" \
+    || echo ">> skills rebuilt and staged (sources changed)"
+fi
+exit 0

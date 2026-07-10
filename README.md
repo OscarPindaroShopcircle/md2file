@@ -42,6 +42,31 @@ and `examples/README.md` for runnable inputs (plain vs. Circeus-branded). The sa
 Circeus theme drives all three; the pandoc version has some inherent trade-offs
 (no cover logo, footer baked into the reference) noted in `pandoc/README.md`.
 
+## Skills (`skills/`)
+
+Two self-contained Claude skills — `md2docx-python` (bundles the lite engine) and
+`md2docx-js` (bundles the JS impl) — each convert a markdown file or string to a
+styled `.docx`. They deliberately reference nothing else in the repo, so the
+engine is *copied* into them. That copy is generated:
+
+```bash
+uv --project python run python scripts/build_skills.py          # rebuild bundles
+uv --project python run python scripts/build_skills.py --check   # fail if drifted
+./scripts/install-hooks.sh                                        # pre-commit auto-sync
+```
+
+`setup.sh` installs the pre-commit hook and builds the bundles; after that, any
+change to the engine / JS / branded theme re-syncs the skills automatically on
+commit.
+
+End-to-end tests exercise each skill's tools (file + string, default + branded)
+and **skip** a skill whose toolchain (`uv` / `node`) isn't installed rather than
+failing:
+
+```bash
+./scripts/test-skills.sh          # or: uv --project python run pytest tests/test_skills.py -v
+```
+
 ## JavaScript version
 
 ### Install

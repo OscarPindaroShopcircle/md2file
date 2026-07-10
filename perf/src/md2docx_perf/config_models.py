@@ -42,7 +42,11 @@ class BenchConfig(_Model):
     output_dir: str = Field("/tmp/md2docx-perf/out", description="Where converted .docx (and the effective config) go.")
     words_per_page: int = Field(500, gt=0, description="Words per 'page' for sizing and throughput.")
     warmup: bool = Field(True, description="Run one untimed conversion per implementation before timing.")
-    regenerate: bool = Field(True, description="Regenerate inputs before benchmarking (generation is not timed).")
+    regenerate: bool = Field(True, description="Ensure inputs exist before benchmarking (generation is not timed).")
+    force: bool = Field(False, description="Re-create input files even if they already exist (ignore the cache).")
+    jobs: Optional[int] = Field(
+        None, ge=1, description="Parallel generation workers. null = number of CPUs."
+    )
     repo_root: Optional[str] = Field(
         None, description="md2docx repo root. If null, auto-detected by walking up from the cwd."
     )
@@ -69,6 +73,8 @@ def build_config(
     words_per_page: Optional[int] = None,
     warmup: Optional[bool] = None,
     regenerate: Optional[bool] = None,
+    force: Optional[bool] = None,
+    jobs: Optional[int] = None,
     repo_root: Optional[str] = None,
     implementations: Optional[list[str]] = None,
 ) -> BenchConfig:
@@ -86,6 +92,10 @@ def build_config(
         overrides["warmup"] = warmup
     if regenerate is not None:
         overrides["regenerate"] = regenerate
+    if force is not None:
+        overrides["force"] = force
+    if jobs is not None:
+        overrides["jobs"] = jobs
     if repo_root is not None:
         overrides["repo_root"] = repo_root
     if implementations:

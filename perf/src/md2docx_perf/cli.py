@@ -14,6 +14,7 @@ import typer
 import yaml
 from pydantic import ValidationError
 from rich.console import Console
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.table import Table
 from typing_extensions import Annotated
 
@@ -122,7 +123,13 @@ def run(
         Optional[bool], typer.Option("--warmup/--no-warmup", help="Warmup pass. Overrides config.")
     ] = None,
     regenerate: Annotated[
-        Optional[bool], typer.Option("--regenerate/--no-regenerate", help="Regenerate inputs. Overrides config.")
+        Optional[bool], typer.Option("--regenerate/--no-regenerate", help="Ensure inputs exist. Overrides config.")
+    ] = None,
+    force: Annotated[
+        Optional[bool], typer.Option("--force/--no-force", help="Re-create inputs even if cached. Overrides config.")
+    ] = None,
+    jobs: Annotated[
+        Optional[int], typer.Option("--jobs", "-j", help="Parallel generation workers (default: CPUs). Overrides config.")
     ] = None,
     repo_root: Annotated[Optional[str], typer.Option("--repo-root", help="md2docx repo root. Overrides config.")] = None,
     impl: Annotated[
@@ -143,6 +150,8 @@ def run(
             words_per_page=words_per_page,
             warmup=warmup,
             regenerate=regenerate,
+            force=force,
+            jobs=jobs,
             repo_root=repo_root,
             implementations=impl,
         )
@@ -159,21 +168,57 @@ def run(
         print_warning("Dry-run mode — no inputs generated, nothing timed.", bold=True)
     print_detail(f"Effective config: {cfg.model_dump()}")
 
-    try:
-        if not dry_run and cfg.regenerate:
-            print_info("Generating inputs (not timed)...")
-        result = core.run(cfg, dry_run=dry_run)
-    except BenchError as exc:
-        print_error(f"Benchmark failed: {exc}")
-        raise typer.Exit(code=EXIT_ERROR)
-
     if dry_run:
+        try:
+            result = core.run(cfg, dry_run=True)
+        except BenchError as exc:
+            print_error(f"Benchmark failed: {exc}")
+            raise typer.Exit(code=EXIT_ERROR)
         print_info(f"Would benchmark: {', '.join(result.impl_names)}")
         print_success("Done.", bold=True)
         return
 
+    # Size the progress bars up front (needs the impl count).
+    try:
+        repo_root = core.resolve_repo_root(cfg.repo_root)
+        impls = core.discover_impls(cfg, repo_root)
+    except BenchError as exc:
+        print_error(f"Benchmark failed: {exc}")
+        raise typer.Exit(code=EXIT_ERROR)
+    total_files = sum(sc.count for sc in cfg.sizes)
+    total_gen = total_files if cfg.regenerate else 0
+    total_conv = total_files * len(impls)
+
+    show_progress = _verbosity >= Verbosity.NORMAL
+    try:
+        if show_progress:
+            with Progress(
+                TextColumn("[cyan]{task.description}"),
+                BarColumn(),
+                MofNCompleteColumn(),
+                TimeElapsedColumn(),
+                console=err_console,
+                transient=True,
+            ) as prog:
+                gen_task = prog.add_task("generating", total=total_gen) if total_gen else None
+                conv_task = prog.add_task("converting", total=total_conv)
+                result = core.run(
+                    cfg,
+                    on_generate=(lambda: prog.advance(gen_task)) if gen_task is not None else None,
+                    on_convert=lambda: prog.advance(conv_task),
+                )
+        else:
+            result = core.run(cfg)
+    except BenchError as exc:
+        print_error(f"Benchmark failed: {exc}")
+        raise typer.Exit(code=EXIT_ERROR)
+
     print_info(f"Implementations: {', '.join(result.impl_names)}")
-    print_info(f"Input generation: {result.gen_seconds:.3f}s (excluded from throughput)")
+    print_info(
+        f"Input generation: {result.gen_seconds:.3f}s "
+        f"({result.gen_written} written, {result.gen_cached} cached, {result.gen_workers} workers; "
+        f"not counted in throughput)"
+    )
     _render(result)
 
     source_format = "yaml" if (config_file and config_file.suffix in (".yaml", ".yml")) else "json"

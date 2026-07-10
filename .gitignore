@@ -17,6 +17,10 @@ __pycache__/
 pandoc/references/*.docx
 pandoc/references/.default-reference.docx
 !pandoc/references/.gitkeep
+
+# self-contained skill installs
+skills/md2docx-js/app/node_modules/
+skills/**/__pycache__/
 # keep placeholder assets, ignore real generated ones
 tests/fixtures/assets/*.png
 !tests/fixtures/assets/.gitkeep

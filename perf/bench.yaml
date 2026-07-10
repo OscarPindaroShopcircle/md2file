@@ -14,9 +14,17 @@ words_per_page: 500
 # Run one untimed conversion per implementation before timing (warms caches).
 warmup: true
 
-# Regenerate inputs before benchmarking (generation is never timed).
-# Set to false to reuse whatever is already in inputs_dir.
+# Ensure inputs exist before benchmarking (generation is never timed).
+# Generation is deterministic and CACHED: files that already exist are reused, so
+# a second run regenerates nothing. Set to false to skip generation entirely.
 regenerate: true
+
+# Re-create input files even if they already exist (ignore the cache). Use this
+# after changing `pages`/`words_per_page`, since the cache key is the filename.
+force: false
+
+# Parallel generation workers. null = number of CPUs (so large sets finish fast).
+jobs: null
 
 # md2docx repo root. null = auto-detect by walking up from the cwd.
 repo_root: null

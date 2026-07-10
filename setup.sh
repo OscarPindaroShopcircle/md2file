@@ -111,5 +111,17 @@ if want pandoc; then
   echo
 fi
 
+# --- git hooks + self-contained skills --------------------------------------
+# Keep the bundled skills in sync (pre-commit rebuilds them from repo sources).
+if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  c_header ">> skills / git hooks"
+  "$ROOT/scripts/install-hooks.sh" >/dev/null && c_success "   git hooks installed"
+  if have uv && [[ -f "$ROOT/python/pyproject.toml" ]]; then
+    (cd "$ROOT/python" && uv sync >/dev/null)
+    uv --project "$ROOT/python" run python "$ROOT/scripts/build_skills.py" >/dev/null && c_success "   skill bundles built"
+  fi
+  echo
+fi
+
 c_done "== done: $ok ready, $skip skipped/pending =="
 c_info "Next: ./regenerate.sh   (renders fixtures into output/<impl>/)"

@@ -25,8 +25,15 @@ uv run md2docx-bench generate-config -o bench.yaml   # template with all default
 ## Defaults
 
 Three size classes (1 page ≈ 500 words): `short` (100 files, ~0.4 pages),
-`medium` (10 files, 20 pages), `large` (3 files, 100 pages). Override via a config
-file:
+`medium` (10 files, 20 pages), `large` (3 files, 100 pages). Override via
+`bench.yaml`:
+
+Input generation is **parallel** (`jobs`, default = CPU count) and **deterministic
++ cached**: each file's content depends only on its seed, and a file that already
+exists is reused — so re-running regenerates nothing. Change `pages`/`words_per_page`?
+Set `force: true` (or `--force`) to ignore the cache, or delete `inputs_dir`.
+
+Config file:
 
 ```yaml
 inputs_dir: /tmp/md2docx-perf/inputs
