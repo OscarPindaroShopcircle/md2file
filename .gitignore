@@ -9,6 +9,7 @@ output/**/*.used.yaml
 
 # python
 python/.venv/
+perf/.venv/
 __pycache__/
 .pytest_cache/
 

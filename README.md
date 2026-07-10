@@ -25,6 +25,18 @@ Multiple implementations live side by side:
 `regenerate.sh` dispatches to each implementation's own `regenerate.sh`
 (`js/`, `python/`, `pandoc/`) and skips any whose toolchain isn't installed.
 
+## Performance
+
+`perf/` is a config-driven benchmark harness (Typer/pydantic) that generates
+random markdown of several size classes (generation is not timed) and measures
+each implementation's throughput:
+
+```bash
+./perf/run.sh              # 100 short + 10×20-page + 3×100-page, all impls
+```
+
+See `perf/README.md` for config and metrics.
+
 See each implementation's README (`js/`… , `python/README.md`, `pandoc/README.md`)
 and `examples/README.md` for runnable inputs (plain vs. Circeus-branded). The same
 Circeus theme drives all three; the pandoc version has some inherent trade-offs

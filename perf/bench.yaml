@@ -1,0 +1,33 @@
+# Performance harness configuration. Edit this file and run ./run.sh.
+# Priority: CLI flag > this file > built-in default.
+# (Regenerate a fresh template any time with:
+#    uv run md2docx-bench generate-config -o bench.yaml)
+
+# Where generated markdown is written/read, and where .docx outputs + the saved
+# effective config go. Kept under /tmp so they never clutter the repo.
+inputs_dir: /tmp/md2docx-perf/inputs
+output_dir: /tmp/md2docx-perf/out
+
+# Words per "page" — used both to size generated docs and to report pages/s.
+words_per_page: 500
+
+# Run one untimed conversion per implementation before timing (warms caches).
+warmup: true
+
+# Regenerate inputs before benchmarking (generation is never timed).
+# Set to false to reuse whatever is already in inputs_dir.
+regenerate: true
+
+# md2docx repo root. null = auto-detect by walking up from the cwd.
+repo_root: null
+
+# Which implementations to benchmark. null = auto-detect all available.
+# Or pin a subset, e.g.:  [js, pandoc]
+implementations: null
+
+# Size classes to benchmark. Add, remove, or resize freely.
+# 1 page = words_per_page words. `count` files are generated per class.
+sizes:
+  - {name: short,  count: 100, pages: 0.4, seed: 1}
+  - {name: medium, count: 100,  pages: 20,  seed: 2}
+  - {name: large,  count: 100,   pages: 100, seed: 3}
