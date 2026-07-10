@@ -1,0 +1,19 @@
+{
+  "name": "md2docx",
+  "version": "0.1.0",
+  "description": "Convert a Markdown file into a styled Word (.docx) document.",
+  "type": "module",
+  "bin": {
+    "md2docx": "src/index.js"
+  },
+  "scripts": {
+    "test": "node --test ../tests/run.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "docx": "^9.0.0",
+    "markdown-it": "^14.1.0"
+  }
+}

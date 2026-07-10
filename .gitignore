@@ -1,0 +1,6 @@
+node_modules/
+*.docx
+/tmp/
+# keep placeholder assets, ignore real generated ones
+tests/fixtures/assets/*.png
+!tests/fixtures/assets/.gitkeep
