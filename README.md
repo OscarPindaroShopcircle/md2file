@@ -11,8 +11,24 @@ Multiple implementations live side by side:
 | Folder     | Approach                                        | Status |
 |------------|-------------------------------------------------|--------|
 | `js/`      | Node + [`markdown-it`](https://github.com/markdown-it/markdown-it) + [`docx`](https://docx.js.org) | ✅ done |
-| `python/`  | pure Python (`python-docx`)                     | 🔜 placeholder |
-| `pandoc/`  | `pandoc --reference-doc=theme.docx`             | 🔜 placeholder |
+| `python/`  | Python + [`markdown-it-py`](https://markdown-it-py.readthedocs.io) + [`python-docx`](https://python-docx.readthedocs.io) (config-driven Typer CLI) | ✅ done |
+| `pandoc/`  | [pandoc](https://pandoc.org) + a restyled `--reference-doc` | ✅ done |
+
+## Setup & regenerate
+
+```bash
+./setup.sh                 # install deps for every available implementation
+./regenerate.sh            # regenerate ALL impls -> output/{js,python,pandoc}/
+./regenerate.sh js pandoc  # or just the named ones
+```
+
+`regenerate.sh` dispatches to each implementation's own `regenerate.sh`
+(`js/`, `python/`, `pandoc/`) and skips any whose toolchain isn't installed.
+
+See each implementation's README (`js/`… , `python/README.md`, `pandoc/README.md`)
+and `examples/README.md` for runnable inputs (plain vs. Circeus-branded). The same
+Circeus theme drives all three; the pandoc version has some inherent trade-offs
+(no cover logo, footer baked into the reference) noted in `pandoc/README.md`.
 
 ## JavaScript version
 

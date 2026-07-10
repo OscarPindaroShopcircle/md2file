@@ -1,9 +1,21 @@
 node_modules/
 *.docx
 /tmp/
-# generated conversion results (keep the per-implementation folders, ignore the .docx)
+# generated conversion results (keep the per-implementation folders, ignore artifacts)
 output/**/*.docx
+output/**/*.used.json
+output/**/*.used.yaml
 !output/**/.gitkeep
+
+# python
+python/.venv/
+__pycache__/
+.pytest_cache/
+
+# pandoc generated reference docs
+pandoc/references/*.docx
+pandoc/references/.default-reference.docx
+!pandoc/references/.gitkeep
 # keep placeholder assets, ignore real generated ones
 tests/fixtures/assets/*.png
 !tests/fixtures/assets/.gitkeep

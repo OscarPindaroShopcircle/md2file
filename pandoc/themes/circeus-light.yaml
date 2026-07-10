@@ -1,0 +1,7 @@
+# Default md2docx theme for the pandoc reference builder.
+# An empty `theme:` uses the built-in defaults (circeus-light). Add a `chrome:`
+# block with footer_text / page_numbers to bake a footer into the reference.
+theme: {}
+chrome:
+  footer_text: null
+  page_numbers: false

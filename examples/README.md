@@ -44,6 +44,19 @@ node js/src/index.js examples/02-branded/report.md \
 Or just run `./examples/convert-examples.sh` from the repo root to generate both
 into `output/js/examples/`.
 
+## Python (config-driven)
+
+The Python implementation puts theme + chrome in a YAML config
+(`02-branded/circeus-brand-light.yaml`). From `examples/02-branded/`:
+
+```bash
+uv --project ../../python run md2docx convert \
+  -c circeus-brand-light.yaml -o /tmp/02-branded.docx
+```
+
+`./python/regenerate.sh` (from the repo root) renders both examples into
+`output/python/examples/`.
+
 ## Notes
 
 - **Logos are official brand assets** — embedded as-is, never recolored or

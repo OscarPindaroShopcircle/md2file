@@ -1,51 +1,45 @@
 #!/usr/bin/env bash
 #
-# Regenerate all converted .docx results into ./output (git-ignored).
-#
-# Renders every fixture in tests/fixtures/ with the JS converter, plus the
-# circeus-report with its full cover/footer chrome so you can eyeball the
-# "real" styled document.
+# Regenerate converted .docx results for every implementation into output/<impl>/
+# (git-ignored). Each implementation has its own regenerate.sh; this dispatches
+# to them and skips any whose toolchain isn't installed.
 #
 # Usage:
-#   ./regenerate.sh                 # convert everything with defaults
-#   ./regenerate.sh --theme foo     # pass extra flags through to the converter
+#   ./regenerate.sh                 # all available implementations
+#   ./regenerate.sh js pandoc       # only the named ones
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-FIXTURES="$ROOT/tests/fixtures"
-OUT="$ROOT/output/js"    # results from the JS implementation
-CLI="$ROOT/js/src/index.js"
+source "$ROOT/scripts/colors.sh"
 
-mkdir -p "$OUT"
-
-# Make sure JS deps are installed.
-if [[ ! -d "$ROOT/js/node_modules" ]]; then
-  echo ">> installing js dependencies..."
-  (cd "$ROOT/js" && npm install)
+TARGETS=("$@")
+if [[ ${#TARGETS[@]} -eq 0 ]]; then
+  TARGETS=(js python pandoc)
 fi
+want() { for t in "${TARGETS[@]}"; do [[ "$t" == "$1" ]] && return 0; done; return 1; }
+have() { command -v "$1" >/dev/null 2>&1; }
 
-echo ">> converting fixtures -> $OUT"
+did=0
+skipped=0
 
-# Plain conversions (no cover/chrome) for every fixture except the report.
-for md in "$FIXTURES"/*.md; do
-  base="$(basename "$md" .md)"
-  [[ "$base" == "circeus-report" ]] && continue
-  echo "   - $base.md"
-  node "$CLI" "$md" -o "$OUT/$base.docx" "$@"
-done
+run_impl() {  # <name> <tool> <script>
+  local name="$1" tool="$2" script="$3"
+  want "$name" || return 0
+  c_header "== $name =="
+  if ! have "$tool"; then
+    c_warn "   SKIP — '$tool' not found (run ./setup.sh $name)"
+    skipped=$((skipped + 1))
+    return 0
+  fi
+  bash "$script"
+  did=$((did + 1))
+  echo
+}
 
-# The full "real" report, with cover + footer + page numbers.
-echo "   - circeus-report.md (with cover chrome)"
-node "$CLI" "$FIXTURES/circeus-report.md" -o "$OUT/circeus-report.docx" \
-  --theme circeus-light \
-  --eyebrow "Internal engineering report" \
-  --title "IP protection: multi-turn leakage detection" \
-  --subtitle "Branch: feature/ip_protection_advanced" \
-  --subtitle "Period: June – July 2026" \
-  --footer "Circeus — confidential" \
-  --page-numbers \
-  "$@"
+run_impl js     node   "$ROOT/js/regenerate.sh"
+run_impl python uv     "$ROOT/python/regenerate.sh"
+run_impl pandoc pandoc "$ROOT/pandoc/regenerate.sh"
 
-echo ">> done. results in $OUT:"
-ls -1 "$OUT"/*.docx | sed 's|.*/|   |'
+c_done "== regenerated $did implementation(s), skipped $skipped =="
+c_info "   compare side by side under: $ROOT/output/{js,python,pandoc}/"

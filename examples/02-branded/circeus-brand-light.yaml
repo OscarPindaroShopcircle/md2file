@@ -1,0 +1,54 @@
+# Circeus branded run-config for the Python (python-docx) implementation.
+# Derived from the circeus-brand skill (theme-tokens.json -> "light"):
+# near-monochrome, off-white/off-black, thin rule lines. Run from THIS folder:
+#   uv run md2docx convert -c circeus-brand-light.yaml -o out.docx
+# (paths below are relative to this folder.)
+input_path: report.md
+
+theme:
+  font: Arial            # brand font is Geist; Arial renders reliably everywhere
+  mono_font: Consolas
+  colors:
+    text: "0A0A0A"
+    primary: "0A0A0A"
+    secondary: "5C5C58"
+    muted: "8B8B87"
+    panel: "F2F2F0"
+    divider: "DDDDDB"
+    bg: "FAFAFA"
+    code_text: "0A0A0A"
+    code_bg: "F2F2F0"
+  body:
+    size: 11
+    line: 1.4
+    after: 8
+    list_after: 3
+  headings:
+    h1: { size: 20, color: "0A0A0A", before: 18, after: 8, rule: true, rule_size: 4, bold: true }
+    h2: { size: 15, color: "0A0A0A", before: 14, after: 6, rule: false, bold: true }
+    h3: { size: 12, color: "5C5C58", before: 10, after: 4, rule: false, bold: true }
+  table:
+    border_size: 2
+    border_color: "DDDDDB"
+    header_fill: "F2F2F0"
+    header_color: "0A0A0A"
+    cell_pad: 100
+  numbering:
+    bullet: "•"
+    sub_bullet: "–"
+  cover:
+    top_space: 40
+    title_size: 30
+    subtitle_size: 12
+    eyebrow_size: 10
+    title_bold: true
+
+chrome:
+  title: "Circeus operating overview"
+  eyebrow: "Operating overview"
+  subtitles:
+    - "For founders considering a partnership"
+  logo: assets/circeus-logo-dark-charcoal.png
+  logo_width: 150
+  footer_text: "Circeus — circeus.com"
+  page_numbers: true
