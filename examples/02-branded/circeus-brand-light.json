@@ -1,0 +1,39 @@
+{
+  "_source": "Derived from circeus-brand skill (assets/theme-tokens.json -> \"light\"). Near-monochrome: hierarchy from grayscale + whitespace, off-white/off-black, medium-weight (non-bold) headings, thin rule lines.",
+  "font": "Arial",
+  "monoFont": "Consolas",
+  "colors": {
+    "text": "0A0A0A",
+    "primary": "0A0A0A",
+    "secondary": "5C5C58",
+    "muted": "8B8B87",
+    "panel": "F2F2F0",
+    "divider": "DDDDDB",
+    "bg": "FAFAFA",
+    "codeText": "0A0A0A",
+    "codeBg": "F2F2F0"
+  },
+  "page": {
+    "width": 12240,
+    "height": 15840,
+    "margin": { "top": 1440, "right": 1440, "bottom": 1440, "left": 1440 }
+  },
+  "body": { "size": 11, "line": 1.4, "after": 8, "listAfter": 3 },
+  "headings": {
+    "h1": { "size": 20, "color": "0A0A0A", "before": 18, "after": 8, "rule": true, "ruleSize": 4, "bold": false },
+    "h2": { "size": 15, "color": "0A0A0A", "before": 14, "after": 6, "rule": false, "bold": false },
+    "h3": { "size": 12, "color": "5C5C58", "before": 10, "after": 4, "rule": false, "bold": false }
+  },
+  "code": { "size": 9.5 },
+  "table": {
+    "borderSize": 2,
+    "borderColor": "DDDDDB",
+    "headerFill": "F2F2F0",
+    "headerColor": "0A0A0A",
+    "cellPad": 100
+  },
+  "numbering": { "bullet": "•", "subBullet": "–" },
+  "cover": { "topSpace": 40, "titleSize": 30, "subtitleSize": 12, "eyebrowSize": 10, "titleBold": true },
+  "footer": { "size": 9 },
+  "image": { "maxWidthPx": 480 }
+}

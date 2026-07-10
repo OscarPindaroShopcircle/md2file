@@ -57,7 +57,7 @@ export function render(tokens, theme, opts = {}) {
         const inlineTok = tokens[i + 1];
         const runs = runsFromInline(inlineTok, {
           ...ctx,
-          base: { color: h.color, size: pt(h.size), bold: true, font: theme.font },
+          base: { color: h.color, size: pt(h.size), bold: h.bold !== false, font: theme.font },
         });
         elements.push(heading(level, runs, theme));
         i += 2; // inline + heading_close

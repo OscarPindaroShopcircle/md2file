@@ -204,7 +204,7 @@ export function cover(chrome, theme) {
       children: [
         new TextRun({
           text: chrome.title,
-          bold: true,
+          bold: theme.cover.titleBold !== false,
           color: theme.colors.primary,
           size: pt(theme.cover.titleSize),
           font: theme.font,

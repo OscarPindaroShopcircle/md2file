@@ -1,6 +1,9 @@
 node_modules/
 *.docx
 /tmp/
+# generated conversion results (keep the per-implementation folders, ignore the .docx)
+output/**/*.docx
+!output/**/.gitkeep
 # keep placeholder assets, ignore real generated ones
 tests/fixtures/assets/*.png
 !tests/fixtures/assets/.gitkeep
