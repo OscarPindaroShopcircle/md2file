@@ -1,7 +1,7 @@
 {
   "theme": {
-    "font": "Geist",
-    "mono_font": "Geist Mono",
+    "font": "Calibri",
+    "mono_font": "Consolas",
     "colors": {
       "text": "0A0A0A",
       "primary": "0A0A0A",
@@ -15,16 +15,16 @@
     },
     "body": {
       "size": 11,
-      "line": 1.4,
-      "after": 8,
-      "list_after": 3
+      "line": 1.5,
+      "after": 12,
+      "list_after": 6
     },
     "headings": {
       "h1": {
         "size": 20,
         "color": "0A0A0A",
-        "before": 18,
-        "after": 8,
+        "before": 24,
+        "after": 12,
         "rule": true,
         "rule_size": 4,
         "bold": true
@@ -32,16 +32,16 @@
       "h2": {
         "size": 15,
         "color": "0A0A0A",
-        "before": 14,
-        "after": 6,
+        "before": 18,
+        "after": 10,
         "rule": false,
         "bold": true
       },
       "h3": {
         "size": 12,
         "color": "5C5C58",
-        "before": 10,
-        "after": 4,
+        "before": 14,
+        "after": 8,
         "rule": false,
         "bold": true
       }
