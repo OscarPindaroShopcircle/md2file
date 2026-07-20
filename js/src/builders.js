@@ -18,7 +18,7 @@ import {
   Tab,
   TabStopType,
 } from "docx";
-import { pt, line } from "./util.js";
+import { pt, tw, line } from "./util.js";
 
 const contentWidth = (theme) => theme.page.width - theme.page.margin.left - theme.page.margin.right;
 
@@ -29,7 +29,7 @@ export function heading(level, runs, theme) {
   return new Paragraph({
     children: runs,
     keepNext: true,
-    spacing: { before: pt(h.before), after: pt(h.after), line: line(theme.body.line), lineRule: "auto" },
+    spacing: { before: tw(h.before), after: tw(h.after), line: line(theme.body.line), lineRule: "auto" },
     border: h.rule
       ? { bottom: { style: BorderStyle.SINGLE, size: h.ruleSize, color: theme.colors.divider, space: 4 } }
       : undefined,
@@ -39,7 +39,7 @@ export function heading(level, runs, theme) {
 export function body(runs, theme, opts = {}) {
   const para = {
     children: runs,
-    spacing: { after: pt(theme.body.after), line: line(theme.body.line), lineRule: "auto" },
+    spacing: { after: tw(theme.body.after), line: line(theme.body.line), lineRule: "auto" },
     alignment: opts.alignment,
   };
   if (opts.quote) {
@@ -53,7 +53,7 @@ export function bullet(runs, theme, level = 0) {
   return new Paragraph({
     children: runs,
     numbering: { reference: "bullet-list", level },
-    spacing: { after: pt(theme.body.listAfter), line: line(theme.body.line), lineRule: "auto" },
+    spacing: { after: tw(theme.body.listAfter), line: line(theme.body.line), lineRule: "auto" },
   });
 }
 
@@ -61,14 +61,14 @@ export function numbered(runs, theme, reference, level = 0) {
   return new Paragraph({
     children: runs,
     numbering: { reference, level },
-    spacing: { after: pt(theme.body.listAfter), line: line(theme.body.line), lineRule: "auto" },
+    spacing: { after: tw(theme.body.listAfter), line: line(theme.body.line), lineRule: "auto" },
   });
 }
 
 export function divider(theme) {
   return new Paragraph({
     children: [],
-    spacing: { before: pt(6), after: pt(6) },
+    spacing: { before: tw(6), after: tw(6) },
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: theme.colors.divider, space: 1 } },
   });
 }
@@ -91,7 +91,7 @@ export function codeBlock(code, theme) {
   return new Paragraph({
     children,
     shading: { fill: theme.colors.codeBg },
-    spacing: { before: pt(6), after: pt(6), line: line(1.2), lineRule: "auto" },
+    spacing: { before: tw(6), after: tw(6), line: line(1.2), lineRule: "auto" },
     border: { top: b, bottom: b, left: b, right: b },
   });
 }
@@ -167,7 +167,7 @@ export function eyebrow(text, theme) {
         characterSpacing: 40,
       }),
     ],
-    spacing: { after: pt(6) },
+    spacing: { after: tw(6) },
   });
 }
 
@@ -193,9 +193,9 @@ function loadCoverImage(logoPath, widthPx, theme) {
 export function cover(chrome, theme) {
   const els = [];
   const logo = chrome.logo ? loadCoverImage(chrome.logo, chrome.logoWidth, theme) : null;
-  if (logo) els.push(new Paragraph({ children: [logo], spacing: { after: pt(18) } }));
+  if (logo) els.push(new Paragraph({ children: [logo], spacing: { after: tw(18) } }));
 
-  els.push(new Paragraph({ children: [], spacing: { before: pt(theme.cover.topSpace) } }));
+  els.push(new Paragraph({ children: [], spacing: { before: tw(theme.cover.topSpace) } }));
 
   if (chrome.eyebrow) els.push(eyebrow(chrome.eyebrow, theme));
 
@@ -210,7 +210,7 @@ export function cover(chrome, theme) {
           font: theme.font,
         }),
       ],
-      spacing: { after: pt(8) },
+      spacing: { after: tw(8) },
     }),
   );
 
@@ -220,7 +220,7 @@ export function cover(chrome, theme) {
         children: [
           new TextRun({ text: sub, color: theme.colors.muted, size: pt(theme.cover.subtitleSize), font: theme.font }),
         ],
-        spacing: { after: pt(4) },
+        spacing: { after: tw(4) },
       }),
     );
   }

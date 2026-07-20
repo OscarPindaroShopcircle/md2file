@@ -4,8 +4,11 @@
 // lineRule "auto") is expressed in 240ths of a line. These keep the theme file
 // readable (points / line-multiples) while emitting what docx expects.
 
-/** points -> half-points */
+/** points -> half-points (font sizes) */
 export const pt = (p) => Math.round(p * 2);
+
+/** points -> twips (paragraph spacing before/after) */
+export const tw = (p) => Math.round(p * 20);
 
 /** line multiple (e.g. 1.3) -> docx line units */
 export const line = (m) => Math.round(m * 240);
