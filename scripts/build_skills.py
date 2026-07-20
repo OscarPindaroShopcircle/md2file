@@ -24,6 +24,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PY_SKILL = ROOT / "skills" / "md2docx-python"
 JS_SKILL = ROOT / "skills" / "md2docx-js"
+CIRCEUS_SKILL = ROOT / "skills" / "md2docx-circeus"
 
 # (dirty flag accumulator for --check)
 _CHANGES: list[str] = []
@@ -94,9 +95,10 @@ def build_python(check: bool) -> None:
 
 # --- js skill: bundle the JS implementation ------------------------------
 
-def build_js(check: bool) -> None:
+def _build_js_app(skill_dir: Path, check: bool) -> None:
+    """Sync the JS implementation + themes + logo into a skill directory."""
     src = ROOT / "js"
-    app = JS_SKILL / "app"
+    app = skill_dir / "app"
 
     for f in sorted((src / "src").glob("*.js")):
         _copy(f, app / "src" / f.name, check)
@@ -109,9 +111,17 @@ def build_js(check: bool) -> None:
     )
     _copy(
         ROOT / "examples" / "02-branded" / "assets" / "circeus-logo-dark-charcoal.png",
-        JS_SKILL / "assets" / "circeus-logo.png",
+        skill_dir / "assets" / "circeus-logo.png",
         check,
     )
+
+
+def build_js(check: bool) -> None:
+    _build_js_app(JS_SKILL, check)
+
+
+def build_circeus(check: bool) -> None:
+    _build_js_app(CIRCEUS_SKILL, check)
 
 
 def main() -> int:
@@ -121,6 +131,7 @@ def main() -> int:
 
     build_python(args.check)
     build_js(args.check)
+    build_circeus(args.check)
 
     if args.check:
         if _CHANGES:

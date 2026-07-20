@@ -22,6 +22,7 @@ jobs:
           cd skills
           zip -r ../dist/md2docx-python.zip md2docx-python
           zip -r ../dist/md2docx-js.zip md2docx-js
+          zip -r ../dist/md2docx-circeus.zip md2docx-circeus
           cd ..
           ls -lh dist/
 
@@ -42,4 +43,5 @@ jobs:
             --title "$tag" \
             --generate-notes \
             dist/md2docx-python.zip \
-            dist/md2docx-js.zip
+            dist/md2docx-js.zip \
+            dist/md2docx-circeus.zip
