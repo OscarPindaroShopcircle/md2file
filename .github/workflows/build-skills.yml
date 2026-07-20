@@ -1,0 +1,45 @@
+name: Package Skills
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package skills as ZIPs
+        run: |
+          mkdir -p dist
+          cd skills
+          zip -r ../dist/md2docx-python.zip md2docx-python
+          zip -r ../dist/md2docx-js.zip md2docx-js
+          cd ..
+          ls -lh dist/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-bundles
+          path: dist/*.zip
+          retention-days: 30
+
+      - name: Create release on tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release create "$tag" \
+            --title "$tag" \
+            --generate-notes \
+            dist/md2docx-python.zip \
+            dist/md2docx-js.zip
